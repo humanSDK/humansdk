@@ -7,7 +7,7 @@ const commentRoutes = require('./routes/CommentRoutes')
 const activityLogRoutes = require('./routes/activityLogRoutes');
 require('dotenv').config();
 
-const PORT = process.env.PORT || 9003; // Set port, default to 9003
+const PORT =9004; // Set port, default to 9003
 
 // MONGODB Connection
 mongoose.connect(process.env.MONGO_URI)

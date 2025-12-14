@@ -6,7 +6,7 @@ const validatePageAccess = require('./middleware/validatePageAccess'); // Import
 const socketRoutes = require('./routes/socketRoutes');
 require('dotenv').config();
 
-const PORT = process.env.PORT || 9003; // Set port, default to 9003
+const PORT =9003; // Set port, default to 9003
 
 // MONGODB Connection
 mongoose.connect(process.env.MONGO_URI)

@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+
+  # User Service
+  user-service:
+    build:
+      context: ../services/user
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "9001:9001"
+    env_file:
+      - ../docker/docker.env
+
+  # Core Service
+  core-service:
+    build:
+      context: ../services/core
+      dockerfile: Dockerfile
+    container_name: core-service
+    restart: unless-stopped
+    ports:
+      - "9002:9002"
+    env_file:
+      - ../docker/docker.env
+
+  # Socket Service
+  socket-service:
+    build:
+      context: ../services/socket
+      dockerfile: Dockerfile
+    container_name: socket-service
+    restart: unless-stopped
+    ports:
+      - "9003:9003"
+    env_file:
+      - ../docker/docker.env
+  # Notification Service
+  notification-service:
+    build:
+      context: ../services/notification
+      dockerfile: Dockerfile
+    container_name: notification-service
+    restart: unless-stopped
+    ports:
+      - "9004:9004"
+    env_file:
+      - ../docker/docker.env      
+
+  # Frontend App (Main Application)
+  frontend-app:
+    build:
+      context: ../frontend/app
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../docker/docker.env
+
+  # Frontend Home (Landing Page)
+  frontend-home:
+    build:
+      context: ../frontend/home
+      dockerfile: Dockerfile
+    container_name: frontend-home
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - ../docker/docker.env

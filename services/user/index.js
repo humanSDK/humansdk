@@ -23,5 +23,5 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/users", userRoutes)
 
-const PORT = process.env.PORT;
+const PORT =9001;
 app.listen(PORT, () => console.log("User Service Running on Port: ", PORT))

@@ -32,7 +32,7 @@ type User = {
 interface MeetingDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (meetingDetails: Object) => void;
+  onSave: (meetingDetails: object) => void;
   members: User[];
   assignees: string[];
 }
@@ -101,7 +101,7 @@ export function MeetingDialog({
     setMeetingDetails(prevDetails => ({...prevDetails,attendees:prevDetails.attendees.filter(member=>member.name!==guest)}))
   }
 
-  const saveHandler = (event: React.FormEvent, meetingDetails: Object) => {
+  const saveHandler = (event: React.FormEvent, meetingDetails: object) => {
     event.preventDefault();
     onSave(meetingDetails);
   };

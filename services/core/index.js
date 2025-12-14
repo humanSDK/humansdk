@@ -60,5 +60,5 @@ app.use("/api/v1/meetings",meetingRoutes)
 //       )
 // })
 
-const PORT = process.env.PORT;
+const PORT = 9002;
 app.listen(PORT, () => console.log("Core Service Running on Port: ", PORT))

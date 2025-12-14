@@ -14,23 +14,6 @@ import { TaskDistributionPie } from "@/components/dashboard/task-distribution-pi
 import { RecentActivityCard } from "@/components/dashboard/recent-activity-card";
 import { Button } from "@/components/ui/button";
 
-interface GlobalTeamMember {
-    _id: string;
-    name: string;
-    email: string;
-    avatar: string;
-    projectsInvolved: number;
-}
-
-interface ProjectAnalytics {
-    projectId: string;
-    projectName: string;
-    tasks: Array<{
-        assignees: string[];
-        status: string;
-    }>;
-}
-
 interface ProjectWiseAnalytics {
     projectId: string;
     projectName: string;
@@ -48,7 +31,7 @@ const WelcomePage = () => {
     const [stats, setStats] = useState<any>(null);
     const [projectData, setProjectData] = useState<any>(null);
     const [taskData, setTaskData] = useState<any>(null);
-    const { activities, refreshActivities } = useNotification();
+    const { refreshActivities } = useNotification();
 
     const fetchDashboardData = useCallback(async () => {
         try {
@@ -106,7 +89,7 @@ const WelcomePage = () => {
                             Welcome back, <span className="text-primary">{userData.user.name}</span>
                         </h1>
                         <p className="text-xl text-muted-foreground">
-                            Here's an overview of your projects and team activity
+                            Here&apos;s an overview of your projects and team activity
                         </p>
                     </motion.div>
 

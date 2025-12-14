@@ -22,6 +22,12 @@ interface ProjectStats {
     pendingTasks: number
 }
 
+interface ProjectStatsWithPercentages extends ProjectStats {
+    completedPercentage: string
+    inProgressPercentage: string
+    pendingPercentage: string
+}
+
 interface ProjectStatsChartProps {
     projects: ProjectStats[]
 }
@@ -37,7 +43,7 @@ export function ProjectStatsChart({ projects }: ProjectStatsChartProps) {
     const total = totals.completed + totals.inProgress + totals.pending;
 
     // Process data to include percentages
-    const data = projects.map(project => {
+    const data: ProjectStatsWithPercentages[] = projects.map(project => {
         const total = project.completedTasks + project.inProgressTasks + project.pendingTasks;
         return {
             projectName: project.projectName,
@@ -52,20 +58,25 @@ export function ProjectStatsChart({ projects }: ProjectStatsChartProps) {
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
+            const projectData = data.find(d => d.projectName === label);
             return (
                 <div className="rounded-lg border bg-background p-2 shadow-sm">
                     <div className="font-medium">{label}</div>
                     <div className="grid gap-2 pt-2">
-                        {payload.map((entry: any, index: number) => (
-                            <div key={`item-${index}`} className="flex items-center gap-2 text-sm">
-                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                                <span className="text-muted-foreground">{entry.name}:</span>
-                                <span className="font-medium">{entry.value}</span>
-                                <span className="text-muted-foreground">
-                                    ({data.find(d => d.projectName === label)?.[`${entry.dataKey}Percentage`]}%)
-                                </span>
-                            </div>
-                        ))}
+                        {payload.map((entry: any, index: number) => {
+                            const percentageKey = `${entry.dataKey}Percentage` as keyof ProjectStatsWithPercentages;
+                            const percentage = projectData?.[percentageKey] || '0';
+                            return (
+                                <div key={`item-${index}`} className="flex items-center gap-2 text-sm">
+                                    <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                    <span className="text-muted-foreground">{entry.name}:</span>
+                                    <span className="font-medium">{entry.value}</span>
+                                    <span className="text-muted-foreground">
+                                        ({percentage}%)
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             );

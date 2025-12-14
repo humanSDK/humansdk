@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, Cone, MessageSquare } from "lucide-react";
+import { Check, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useProjectMembers } from "@/components/context/ProjectMemberContext";
@@ -23,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast, useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import UserContext from "./context/UserContext";
 import { MeetingDialog } from "./MeetingDialog";
@@ -207,7 +207,7 @@ const TaskNode = ({ data, id, isConnectable }: TaskNodeProps) => {
 
   const scheduleMeeting=(meetingDetails:any)=>{
       axios.post(`${process.env.NEXT_PUBLIC_CORE_SERVICE_API}/meetings/add-event`,{user:context?.userData.user,meetingDetails})
-      .then(res=>{
+      .then(()=>{
         setIsDialogOpen(false)
         toast({
           title: "Meeting scheduled successfully",
