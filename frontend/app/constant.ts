@@ -1,0 +1,8 @@
+export const USER_SERVICE_API = 'https://user-service.humansdk.com/api/v1'
+export const CORE_SERVICE_API = 'https://core-service.humansdk.com/api/v1'
+export const SOCKET_SERVICE_API = 'https://socket-service.humansdk.com'
+export const NOTIFICATION_SERVICE_API = 'https://notification-service.humansdk.com'
+// export const USER_SERVICE_API = 'http://localhost:9001/api/v1'
+// export const CORE_SERVICE_API = 'http://localhost:9002/api/v1'
+// export const SOCKET_SERVICE_API = 'http://localhost:9003'
+// export const NOTIFICATION_SERVICE_API = 'http://localhost:9004'
