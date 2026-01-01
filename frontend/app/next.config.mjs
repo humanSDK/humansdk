@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: "standalone", // This is required for Docker deployments
+    // Removed standalone output as it's not being generated properly
+    // Using standard Next.js build instead
     reactStrictMode: false,
     images: {
         domains: ['cos-theta.s3.eu-north-1.amazonaws.com'], 

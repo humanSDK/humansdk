@@ -16,12 +16,8 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Verify standalone output was created
-RUN test -d .next/standalone || (echo "ERROR: Standalone output not found!" && ls -la .next/ && exit 1)
-RUN test -f .next/standalone/server.js || (echo "ERROR: server.js not found!" && exit 1)
-
-# Ensure static directory exists (create empty if it doesn't)
-RUN mkdir -p .next/static || true
+# Verify build was successful
+RUN test -d .next || (echo "ERROR: Build failed - .next directory not found!" && exit 1)
 
 # -----------------------------
 
@@ -29,14 +25,21 @@ FROM node:18-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy standalone output
-COPY --from=build /app/.next/standalone ./
+# Copy package files
+COPY package*.json ./
 
-# Copy static files (will copy empty directory if static doesn't exist, which is fine)
-RUN mkdir -p ./.next
-COPY --from=build /app/.next/static ./.next/static
+# Install only production dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built application from build stage
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/next.config.mjs ./
+COPY --from=build /app/package.json ./
+
+# Verify .next directory exists
+RUN test -d .next || (echo "ERROR: .next directory not found!" && exit 1)
 
 EXPOSE 3000
 
-# The standalone output includes server.js in the root
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
