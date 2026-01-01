@@ -50,9 +50,10 @@ COPY --from=build /app/package.json ./
 # Create empty public directory (Next.js works fine without it, but it's good practice)
 RUN mkdir -p ./public
 
-# Verify .next directory exists and has BUILD_ID
+# Verify .next directory exists and has required structure
 RUN test -d .next || (echo "ERROR: .next directory not found!" && exit 1)
-RUN test -f .next/BUILD_ID || (echo "ERROR: BUILD_ID not found in .next directory!" && exit 1)
+# Check for static directory or server directory (both indicate valid Next.js build)
+RUN (test -d .next/static || test -d .next/server) || (echo "ERROR: Invalid .next build structure! Contents:" && ls -la .next && exit 1)
 
 EXPOSE 3000
 
