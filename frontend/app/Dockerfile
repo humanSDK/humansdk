@@ -1,60 +1,29 @@
 FROM node:18 AS build
-
 WORKDIR /app
 
-# Accept build arguments for Next.js public environment variables
 ARG NEXT_PUBLIC_USER_SERVICE_API
 ARG NEXT_PUBLIC_CORE_SERVICE_API
 ARG NEXT_PUBLIC_SOCKET_SERVICE_API
 ARG NEXT_PUBLIC_NOTIFICATION_SERVICE_API
 
-# Set as environment variables for build
 ENV NEXT_PUBLIC_USER_SERVICE_API=$NEXT_PUBLIC_USER_SERVICE_API
 ENV NEXT_PUBLIC_CORE_SERVICE_API=$NEXT_PUBLIC_CORE_SERVICE_API
 ENV NEXT_PUBLIC_SOCKET_SERVICE_API=$NEXT_PUBLIC_SOCKET_SERVICE_API
 ENV NEXT_PUBLIC_NOTIFICATION_SERVICE_API=$NEXT_PUBLIC_NOTIFICATION_SERVICE_API
 
-# Copy package files
 COPY package*.json ./
-
-# Install all dependencies (including devDependencies for build)
 RUN npm ci
-
-# Copy source code
 COPY . .
-
-# Build the Next.js application
 RUN npm run build
 
-# Verify build was successful
-RUN test -d .next || (echo "ERROR: Build failed - .next directory not found!" && exit 1)
+# -----------------------------
 
-# Production stage
 FROM node:18-alpine
-
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# Copy package files
-COPY package*.json ./
-
-# Copy node_modules from build stage (avoids network issues and ensures exact versions)
-COPY --from=build /app/node_modules ./node_modules
-
-# Copy built application from build stage
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/next.config.mjs ./
-COPY --from=build /app/package.json ./
-
-# Create empty public directory (Next.js works fine without it, but it's good practice)
-RUN mkdir -p ./public
-
-# Verify .next directory exists and has required structure
-RUN test -d .next || (echo "ERROR: .next directory not found!" && exit 1)
-# Check for static directory or server directory (both indicate valid Next.js build)
-RUN (test -d .next/static || test -d .next/server) || (echo "ERROR: Invalid .next build structure! Contents:" && ls -la .next && exit 1)
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
 
 EXPOSE 3000
-
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

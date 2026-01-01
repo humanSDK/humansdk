@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    output: "standalone", // This is required for Docker deployments
     reactStrictMode: false,
     images: {
         domains: ['cos-theta.s3.eu-north-1.amazonaws.com'], 
