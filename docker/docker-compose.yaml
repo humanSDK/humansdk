@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-
   # User Service
   user-service:
     build:
@@ -11,8 +8,12 @@ services:
     restart: unless-stopped
     ports:
       - "9001:9001"
+    environment:
+      PORT: 9001
     env_file:
-      - ../docker/docker.env
+      - docker.env
+    networks:
+      - cos-theta-network
 
   # Core Service
   core-service:
@@ -23,8 +24,12 @@ services:
     restart: unless-stopped
     ports:
       - "9002:9002"
+    environment:
+      PORT: 9002
     env_file:
-      - ../docker/docker.env
+      - docker.env
+    networks:
+      - cos-theta-network
 
   # Socket Service
   socket-service:
@@ -35,8 +40,13 @@ services:
     restart: unless-stopped
     ports:
       - "9003:9003"
+    environment:
+      PORT: 9003
     env_file:
-      - ../docker/docker.env
+      - docker.env
+    networks:
+      - cos-theta-network
+
   # Notification Service
   notification-service:
     build:
@@ -46,20 +56,36 @@ services:
     restart: unless-stopped
     ports:
       - "9004:9004"
+    environment:
+      PORT: 9004
     env_file:
-      - ../docker/docker.env      
+      - docker.env
+    networks:
+      - cos-theta-network
 
   # Frontend App (Main Application)
   frontend-app:
     build:
       context: ../frontend/app
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_USER_SERVICE_API: http://localhost:9001/api/v1
+        NEXT_PUBLIC_CORE_SERVICE_API: http://localhost:9002/api/v1
+        NEXT_PUBLIC_SOCKET_SERVICE_API: http://localhost:9003
+        NEXT_PUBLIC_NOTIFICATION_SERVICE_API: http://localhost:9004
     container_name: frontend-app
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
-      - ../docker/docker.env
+      - docker.env
+    depends_on:
+      - user-service
+      - core-service
+      - socket-service
+      - notification-service
+    networks:
+      - cos-theta-network
 
   # Frontend Home (Landing Page)
   frontend-home:
@@ -71,4 +97,10 @@ services:
     ports:
       - "3001:3000"
     env_file:
-      - ../docker/docker.env
+      - docker.env
+    networks:
+      - cos-theta-network
+
+networks:
+  cos-theta-network:
+    driver: bridge
