@@ -68,24 +68,13 @@ services:
     build:
       context: ../frontend/app
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_USER_SERVICE_API: http://localhost:9001/api/v1
-        NEXT_PUBLIC_CORE_SERVICE_API: http://localhost:9002/api/v1
-        NEXT_PUBLIC_SOCKET_SERVICE_API: http://localhost:9003
-        NEXT_PUBLIC_NOTIFICATION_SERVICE_API: http://localhost:9004
     container_name: frontend-app
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
-      - docker.env
-    depends_on:
-      - user-service
-      - core-service
-      - socket-service
-      - notification-service
-    networks:
-      - cos-theta-network
+      - ../docker/docker.env
+
 
   # Frontend Home (Landing Page)
   frontend-home:
