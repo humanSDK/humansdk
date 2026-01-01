@@ -39,14 +39,16 @@ ENV NODE_ENV=production
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (Next.js runtime needs all deps)
-RUN npm ci && npm cache clean --force
+# Copy node_modules from build stage (avoids network issues and ensures exact versions)
+COPY --from=build /app/node_modules ./node_modules
 
 # Copy built application from build stage
 COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
 COPY --from=build /app/next.config.mjs ./
 COPY --from=build /app/package.json ./
+
+# Create empty public directory (Next.js works fine without it, but it's good practice)
+RUN mkdir -p ./public
 
 # Verify .next directory exists and has BUILD_ID
 RUN test -d .next || (echo "ERROR: .next directory not found!" && exit 1)
