@@ -2,9 +2,10 @@
 const nextConfig = {
     // Removed standalone output as it's not being generated properly
     // Using standard Next.js build instead
+    output: "standalone",
     reactStrictMode: false,
     images: {
-        domains: ['cos-theta.s3.eu-north-1.amazonaws.com'], 
+        domains: ['cos-thetas.s3.us-east-1.amazonaws.com'],
     },
     eslint: {
         // Warning: This allows production builds to successfully complete even if
