@@ -1,15 +1,13 @@
+version: "3.9"
+
 services:
   # User Service
   user-service:
-    build:
-      context: ../services/user
-      dockerfile: Dockerfile
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/user-service:latest
     container_name: user-service
     restart: unless-stopped
     ports:
       - "9001:9001"
-    environment:
-      PORT: 9001
     env_file:
       - docker.env
     networks:
@@ -17,15 +15,11 @@ services:
 
   # Core Service
   core-service:
-    build:
-      context: ../services/core
-      dockerfile: Dockerfile
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/core-service:latest
     container_name: core-service
     restart: unless-stopped
     ports:
       - "9002:9002"
-    environment:
-      PORT: 9002
     env_file:
       - docker.env
     networks:
@@ -33,15 +27,11 @@ services:
 
   # Socket Service
   socket-service:
-    build:
-      context: ../services/socket
-      dockerfile: Dockerfile
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/socket-service:latest
     container_name: socket-service
     restart: unless-stopped
     ports:
       - "9003:9003"
-    environment:
-      PORT: 9003
     env_file:
       - docker.env
     networks:
@@ -49,42 +39,31 @@ services:
 
   # Notification Service
   notification-service:
-    build:
-      context: ../services/notification
-      dockerfile: Dockerfile
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/notification-service:latest
     container_name: notification-service
     restart: unless-stopped
     ports:
       - "9004:9004"
-    environment:
-      PORT: 9004
     env_file:
       - docker.env
     networks:
       - cos-theta-network
 
-  # Frontend App (Main Application)
+  # Frontend App
   frontend-app:
-    build:
-      context: ../frontend/app
-      dockerfile: Dockerfile
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/frontend-app:latest
     container_name: frontend-app
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      NODE_ENV: production
     env_file:
       - docker.env
     networks:
       - cos-theta-network
 
-
-  # Frontend Home (Landing Page)
+  # Frontend Home
   frontend-home:
-    build:
-      context: ../frontend/home
-      dockerfile: Dockerfile
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/frontend-home:latest
     container_name: frontend-home
     restart: unless-stopped
     ports:
