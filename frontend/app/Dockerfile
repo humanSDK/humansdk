@@ -16,6 +16,8 @@ WORKDIR /app
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/next.config.mjs ./
+# Copy app directory (required for Next.js 14 App Router server components)
+COPY --from=build /app/app ./app
 
 RUN npm install 
 
