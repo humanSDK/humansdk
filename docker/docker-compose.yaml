@@ -1,47 +1,26 @@
 version: "3.9"
 
 services:
-  user-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/user-service:latest
-    container_name: user-service
-    restart: unless-stopped
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
     ports:
-      - "9001:9001"
-    env_file:
-      - docker.env
-    networks:
-      - cos-theta-network
-
-  core-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/core-service:latest
-    container_name: core-service
+      - "3000:3000"   # frontend-app
+      - "3001:3001"   # frontend-home
+      - "9001:9001"   # user-service
+      - "9002:9002"   # core-service
+      - "9003:9003"   # socket-service
+      - "9004:9004"   # notification-service
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
-    ports:
-      - "9002:9002"
-    env_file:
-      - docker.env
-    networks:
-      - cos-theta-network
-
-  socket-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/socket-service:latest
-    container_name: socket-service
-    restart: unless-stopped
-    ports:
-      - "9003:9003"
-    env_file:
-      - docker.env
-    networks:
-      - cos-theta-network
-
-  notification-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/notification-service:latest
-    container_name: notification-service
-    restart: unless-stopped
-    ports:
-      - "9004:9004"
-    env_file:
-      - docker.env
+    depends_on:
+      - frontend-app
+      - frontend-home
+      - user-service
+      - core-service
+      - socket-service
+      - notification-service
     networks:
       - cos-theta-network
 
@@ -49,8 +28,6 @@ services:
     image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/frontend-app:latest
     container_name: frontend-app
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     env_file:
       - docker.env
     networks:
@@ -60,8 +37,42 @@ services:
     image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/frontend-home:latest
     container_name: frontend-home
     restart: unless-stopped
-    ports:
-      - "3001:3000"
+    env_file:
+      - docker.env
+    networks:
+      - cos-theta-network
+
+  user-service:
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/user-service:latest
+    container_name: user-service
+    restart: unless-stopped
+    env_file:
+      - docker.env
+    networks:
+      - cos-theta-network
+
+  core-service:
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/core-service:latest
+    container_name: core-service
+    restart: unless-stopped
+    env_file:
+      - docker.env
+    networks:
+      - cos-theta-network
+
+  socket-service:
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/socket-service:latest
+    container_name: socket-service
+    restart: unless-stopped
+    env_file:
+      - docker.env
+    networks:
+      - cos-theta-network
+
+  notification-service:
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/notification-service:latest
+    container_name: notification-service
+    restart: unless-stopped
     env_file:
       - docker.env
     networks:
