@@ -1,9 +1,8 @@
 version: "3.9"
 
 services:
-  # User Service
   user-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/user-service:latest
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/user-service:latest
     container_name: user-service
     restart: unless-stopped
     ports:
@@ -13,9 +12,8 @@ services:
     networks:
       - cos-theta-network
 
-  # Core Service
   core-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/core-service:latest
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/core-service:latest
     container_name: core-service
     restart: unless-stopped
     ports:
@@ -25,9 +23,8 @@ services:
     networks:
       - cos-theta-network
 
-  # Socket Service
   socket-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/socket-service:latest
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/socket-service:latest
     container_name: socket-service
     restart: unless-stopped
     ports:
@@ -37,9 +34,8 @@ services:
     networks:
       - cos-theta-network
 
-  # Notification Service
   notification-service:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/notification-service:latest
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/notification-service:latest
     container_name: notification-service
     restart: unless-stopped
     ports:
@@ -49,9 +45,8 @@ services:
     networks:
       - cos-theta-network
 
-  # Frontend App
   frontend-app:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/frontend-app:latest
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/frontend-app:latest
     container_name: frontend-app
     restart: unless-stopped
     ports:
@@ -61,9 +56,8 @@ services:
     networks:
       - cos-theta-network
 
-  # Frontend Home
   frontend-home:
-    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/frontend-home:latest
+    image: 925606811675.dkr.ecr.us-east-1.amazonaws.com/cos-theta/frontend-home:latest
     container_name: frontend-home
     restart: unless-stopped
     ports:
