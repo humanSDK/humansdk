@@ -2,7 +2,7 @@
 const nextConfig = {
     // Removed standalone output as it's not being generated properly
     // Using standard Next.js build instead
-    output: "standalone",
+  
     reactStrictMode: false,
     images: {
         domains: ['cos-thetas.s3.us-east-1.amazonaws.com'],
