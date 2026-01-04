@@ -153,10 +153,10 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --region ${{ env.AWS_REGION }} \
             --parameters commands="[
-              \"cd /home/ubuntu/cos-theta/docker\",
+              \"cd /home/ubuntu/humansdk/docker\",
               \"aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com\",
               \"docker compose --env-file docker.env pull $SERVICES\",
-              \"docker compose --env-file docker.env up -d --no-deps --force-recreate $SERVICES\",
+              \"docker compose --env-file docker.env up -d $SERVICES\",
               \"docker system prune -af\",
               \"docker compose restart nginx\"
             ]"

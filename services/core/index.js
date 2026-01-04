@@ -48,7 +48,7 @@ app.get("/health", (req, res) => {
     const statusCode = mongoose.connection.readyState === 1 ? 200 : 503;
     res.status(statusCode).json(healthStatus);
 });
-console.log("Core Service Health Check Route Added");
+console.log("Core Service Health Check Route Added v2");
 //apis
 app.use("/api/v1/team", teamRoutes)
 app.use("/api/v1/team-members", teamMemberRoutes)
