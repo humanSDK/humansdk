@@ -35,6 +35,20 @@ mongoose.connect(process.env.MONGO_URI)
 //express-session
 app.use(session({ secret: 'secretkey', resave: false, saveUninitialized: true }));
 
+// Health check route
+app.get("/health", (req, res) => {
+    const healthStatus = {
+        status: "healthy",
+        service: "core-service",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+    };
+    
+    const statusCode = mongoose.connection.readyState === 1 ? 200 : 503;
+    res.status(statusCode).json(healthStatus);
+});
+
 //apis
 app.use("/api/v1/team", teamRoutes)
 app.use("/api/v1/team-members", teamMemberRoutes)
