@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Rocket, Stars, ArrowRight } from 'lucide-react'
-
+import { COS_THETA_APP } from '../constant'
 /* Original pricing code preserved in comments for future use */
 
 export function Pricing() {
@@ -91,7 +91,7 @@ export function Pricing() {
               </div>
 
               <div className="text-center space-y-2">
-                <Button size="lg" className="group" onClick={() => window.location.href = 'http://localhost:3000/signup'}>
+                <Button size="lg" className="group" onClick={() => window.location.href = `${COS_THETA_APP}/signup`}>
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                 </Button>

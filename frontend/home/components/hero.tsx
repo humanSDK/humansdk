@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import HeroImage from './images/hero11.png'
-
+import { COS_THETA_APP } from '../constant'
 export function Hero() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden section-padding">
@@ -41,7 +41,7 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <Button size="lg" className="text-lg px-8 py-6" onClick={() => window.location.href = 'http://localhost:3000/signup'}>
+          <Button size="lg" className="text-lg px-8 py-6" onClick={() => window.location.href = `${COS_THETA_APP}/signup`}>
             Start Free Trial
           </Button>
           <Button
