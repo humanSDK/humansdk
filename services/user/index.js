@@ -23,5 +23,19 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/v1/auth", authRoutes)
 app.use("/api/v1/users", userRoutes)
 
+// Health check route
+app.get("/health", (req, res) => {
+    const healthStatus = {
+        status: "healthy",
+        service: "user-service",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+    };
+    
+    const statusCode = mongoose.connection.readyState === 1 ? 200 : 503;
+    res.status(statusCode).json(healthStatus);
+});
+console.log("User Service Health Check Route Added");
 const PORT =9001;
 app.listen(PORT, () => console.log("User Service Running on Port: ", PORT))
