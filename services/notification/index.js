@@ -31,6 +31,7 @@ const io = new Server(PORT, {
         methods: ['GET', 'POST'],
     },
     allowEIO3: true,
+    maxHttpBufferSize: 10 * 1024 * 1024, // 10MB - allows for base64 encoded files (5MB file = ~6.7MB base64)
 });
 
 // Use middleware for authentication

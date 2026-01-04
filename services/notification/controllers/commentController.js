@@ -15,16 +15,46 @@ exports.handleFileUpload = async (socket, files) => {
 
         // Validate file sizes
         for (const file of files) {
-            if (file.buffer.length > MAX_FILE_SIZE) {
+            let bufferLength;
+            if (typeof file.buffer === 'string') {
+                // Base64 string - calculate actual size (base64 is ~33% larger)
+                bufferLength = Math.floor((file.buffer.length * 3) / 4);
+            } else if (Array.isArray(file.buffer)) {
+                bufferLength = file.buffer.length;
+            } else {
+                bufferLength = file.buffer?.length || file.buffer?.byteLength || 0;
+            }
+            if (bufferLength > MAX_FILE_SIZE) {
                 throw new Error(`File ${file.originalname} exceeds 5MB limit`);
             }
         }
         // Ensure files are in the correct format
-        const processedFiles = files.map(file => ({
-            buffer: Buffer.from(file.buffer), // Convert to Buffer if needed
-            originalname: file.originalname,
-            mimetype: file.mimetype
-        }));
+        const processedFiles = files.map(file => {
+            let buffer;
+            // Handle different buffer formats from frontend
+            if (Buffer.isBuffer(file.buffer)) {
+                buffer = file.buffer;
+            } else if (typeof file.buffer === 'string') {
+                // Base64 string from browser
+                buffer = Buffer.from(file.buffer, 'base64');
+            } else if (Array.isArray(file.buffer)) {
+                // Convert array to Buffer (from browser)
+                buffer = Buffer.from(file.buffer);
+            } else if (file.buffer instanceof Uint8Array) {
+                buffer = Buffer.from(file.buffer);
+            } else if (file.buffer && typeof file.buffer === 'object' && file.buffer.data) {
+                // Handle ArrayBuffer-like objects
+                buffer = Buffer.from(file.buffer.data || file.buffer);
+            } else {
+                buffer = Buffer.from(file.buffer);
+            }
+            
+            return {
+                buffer,
+                originalname: file.originalname,
+                mimetype: file.mimetype
+            };
+        });
 
         const uploadPromises = processedFiles.map(file => uploadToS3(file, userId));
         const uploadedFiles = await Promise.all(uploadPromises);

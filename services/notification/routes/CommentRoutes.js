@@ -3,6 +3,11 @@ module.exports = (io) => {
     io.on("connection", (socket) => {
         console.log(`User connected: ${socket.id}`);
 
+        // Add error handler for debugging
+        socket.on("error", (error) => {
+            console.error(`Socket error for ${socket.id}:`, error);
+        });
+
         // Join personal room (from your existing code)
         socket.on("join_personal_room", () => {
             console.log(`${socket.id} joined ${socket.user.id}`);
@@ -24,13 +29,25 @@ module.exports = (io) => {
           });
         socket.on("upload_files", async (data) => {
             try {
+                console.log("upload_files event received");
+                console.log("Data received:", data ? "exists" : "null", data?.files ? `with ${data.files.length} files` : "no files");
+                if (!data || !data.files) {
+                    console.error("Invalid upload_files data:", data);
+                    socket.emit('upload_error', { message: 'Invalid file data' });
+                    return;
+                }
                 const files = data.files;
+                console.log(`Processing ${files.length} file(s)`);
                 const uploadedFiles = await handleFileUpload(socket, files);
                 if (uploadedFiles) {
+                    console.log("Files uploaded successfully, emitting files_uploaded");
                     socket.emit('files_uploaded', uploadedFiles);
+                } else {
+                    console.error("File upload returned null");
                 }
             } catch (error) {
-                socket.emit('upload_error', { message: 'File upload failed' });
+                console.error("Error in upload_files handler:", error);
+                socket.emit('upload_error', { message: error.message || 'File upload failed' });
             }
         });
 

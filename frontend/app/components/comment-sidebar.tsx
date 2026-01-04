@@ -226,6 +226,21 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
                   src={file.url}
                   alt={file.name}
                   className="max-h-full max-w-full object-contain"
+                  onError={(e) => {
+                    console.error('Image load error:', file.url, e)
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const parent = target.parentElement
+                    if (parent) {
+                      parent.innerHTML = `
+                        <div class="flex flex-col items-center justify-center text-muted-foreground p-4">
+                          <p class="mb-2">Failed to load image</p>
+                          <p class="text-xs text-center break-all">${file.url}</p>
+                        </div>
+                      `
+                    }
+                  }}
+                  onLoad={() => console.log('Image loaded successfully:', file.url)}
                 />
               </div>
             ) : file.type === 'pdf' ? (
@@ -321,8 +336,11 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
                   const fileType = getFileType(file.url, file.name)
                   return (
                     <button
-                      key={index}
-                      onClick={() => handleFilePreview(file)}
+                      key={`${comment.id}-${file.url}-${index}`}
+                      onClick={() => {
+                        console.log('Opening file preview:', file.url, file.name)
+                        handleFilePreview(file)
+                      }}
                       className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${isCurrentUser(comment.authorId)
                         ? 'bg-primary-foreground/10 hover:bg-primary-foreground/20'
                         : 'bg-background hover:bg-background/80'
@@ -427,15 +445,32 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
       })
 
       newSocket.on('receive_comment', (comment: Comment) => {
-        setComments(prev => [...prev, comment])
+        setComments(prev => {
+          // Check if comment already exists to prevent duplicates
+          // Check by both id and timestamp to be more robust
+          const exists = prev.some(c => 
+            c.id === comment.id || 
+            (c.timestamp === comment.timestamp && c.authorId === comment.authorId && c.content === comment.content)
+          )
+          if (exists) {
+            console.log('Comment already exists, skipping duplicate:', comment.id)
+            return prev
+          }
+          console.log('Adding new comment:', comment.id)
+          return [...prev, comment]
+        })
         setTimeout(scrollToBottom, 100)
       })
 
       newSocket.on('task_comments', (response: { comments: Comment[], currentUserId: string }) => {
         const { comments, currentUserId } = response
-        setComments(comments)
+        // Remove duplicates before setting comments
+        const uniqueComments = comments.filter((comment, index, self) => 
+          index === self.findIndex(c => c.id === comment.id)
+        )
+        setComments(uniqueComments)
         setCurrentUserId(currentUserId)
-        localStorage.setItem(`comments_${taskId}`, JSON.stringify(comments))
+        localStorage.setItem(`comments_${taskId}`, JSON.stringify(uniqueComments))
         setTimeout(scrollToBottom, 100)
       })
 
@@ -491,6 +526,14 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
       }
 
       return () => {
+        // Remove all event listeners to prevent duplicates
+        newSocket.off('receive_comment')
+        newSocket.off('task_comments')
+        newSocket.off('message_pin_updated')
+        newSocket.off('comment_error')
+        newSocket.off('connect')
+        newSocket.off('reconnect')
+        newSocket.off('connect_error')
         newSocket.emit('leave_task_room', taskId)
         newSocket.disconnect()
       }
@@ -509,7 +552,20 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if ((!message.trim() && selectedFiles.length === 0) || !socket || isSending) return
+    if ((!message.trim() && selectedFiles.length === 0) || !socket || isSending) {
+      console.log('Submit blocked:', { hasMessage: !!message.trim(), hasFiles: selectedFiles.length > 0, hasSocket: !!socket, isSending })
+      return
+    }
+
+    if (!socket.connected) {
+      setIsSending(false)
+      toast({
+        variant: "destructive",
+        title: "Connection Error",
+        description: "Socket not connected. Please wait and try again."
+      })
+      return
+    }
 
     setIsSending(true)
     if (selectedFiles.length > 0) {
@@ -517,13 +573,57 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
     }
     try {
       if (selectedFiles.length > 0) {
+        console.log('Processing files:', selectedFiles.length)
         const processedFiles = await Promise.all(
-          selectedFiles.map(async ({ file }) => await convertToBuffer(file))
+          selectedFiles.map(async ({ file }) => {
+            console.log('Converting file:', file.name, file.size)
+            const result = await convertToBuffer(file)
+            console.log('File converted:', file.name, 'buffer length:', result.buffer.length)
+            return result
+          })
         )
 
-        socket.emit('upload_files', { files: processedFiles })
+        console.log('Emitting upload_files event with', processedFiles.length, 'files')
+        console.log('Total payload size (approx):', JSON.stringify(processedFiles).length, 'bytes')
+        
+        // Check if socket is still connected before emitting
+        if (!socket.connected) {
+          console.error('Socket disconnected before emit')
+          setIsUploading(false)
+          setIsSending(false)
+          toast({
+            variant: "destructive",
+            title: "Connection Error",
+            description: "Lost connection. Please try again."
+          })
+          return
+        }
+
+        socket.emit('upload_files', { files: processedFiles }, (ack?: { error?: string }) => {
+          // Optional acknowledgment callback
+          if (ack && ack.error) {
+            console.error('Upload acknowledgment error:', ack.error)
+          } else {
+            console.log('Upload event acknowledged by server')
+          }
+        })
+        console.log('upload_files event emitted')
+
+        // Set timeout for upload response (30 seconds)
+        const uploadTimeout = setTimeout(() => {
+          console.error('Upload timeout - no response from server')
+          setIsUploading(false)
+          setIsSending(false)
+          toast({
+            variant: "destructive",
+            title: "Upload Timeout",
+            description: "Server did not respond. The file may be too large. Please try a smaller file."
+          })
+        }, 30000)
 
         socket.once('files_uploaded', (uploadedFiles) => {
+          clearTimeout(uploadTimeout)
+          console.log('files_uploaded received:', uploadedFiles)
           setIsUploading(false)
           socket.emit('send_comment', {
             taskId,
@@ -533,11 +633,19 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
 
           setSelectedFiles([])
           setMessage("")
+          setIsSending(false)
         })
 
         socket.once('upload_error', (error) => {
+          clearTimeout(uploadTimeout)
+          console.error('upload_error received:', error)
           setIsUploading(false)
-          throw new Error(error.message)
+          setIsSending(false)
+          toast({
+            variant: "destructive",
+            title: "Upload Error",
+            description: error.message || "Failed to upload files"
+          })
         })
       } else {
         socket.emit('send_comment', {
@@ -546,15 +654,17 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
           attachments: []
         })
         setMessage("")
+        setIsSending(false)
       }
     } catch (error: any) {
+      console.error('Error in handleSubmit:', error)
+      setIsUploading(false)
+      setIsSending(false)
       toast({
         variant: "destructive",
         title: "Error",
         description: error.message || "Failed to send message"
       })
-    } finally {
-      setIsSending(false)
     }
   }
 
@@ -587,14 +697,20 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
     </div>
   )
 
-  const convertToBuffer = async (file: File): Promise<{ buffer: Buffer, originalname: string, mimetype: string }> => {
+  const convertToBuffer = async (file: File): Promise<{ buffer: string, originalname: string, mimetype: string }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = () => {
         const arrayBuffer = reader.result as ArrayBuffer
-        const buffer = Buffer.from(arrayBuffer)
+        // Convert ArrayBuffer to base64 string for Socket.io serialization
+        const uint8Array = new Uint8Array(arrayBuffer)
+        let binary = ''
+        for (let i = 0; i < uint8Array.length; i++) {
+          binary += String.fromCharCode(uint8Array[i])
+        }
+        const base64 = btoa(binary)
         resolve({
-          buffer,
+          buffer: base64, // Send as base64 string
           originalname: file.name,
           mimetype: file.type
         })
