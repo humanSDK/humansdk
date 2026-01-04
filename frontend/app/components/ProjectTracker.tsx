@@ -98,8 +98,11 @@ const ProjectTracker = ({ projectId, pageId }: ProjectTrackerProp) => {
       const token = localStorage.getItem('ct_token')
 
       const newSocket = io(SOCKET_SERVICE_API, {
-        transports: ['websocket'],
-        query: { token, projectId: projectId }
+        transports: ['websocket', 'polling'],
+        query: { token, projectId: projectId },
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
       });
 
       socketRef.current = newSocket;

@@ -95,7 +95,7 @@ const TaskNode = ({ data, id, isConnectable }: TaskNodeProps) => {
     if (!token || !id) return;
 
     const socket = io(NOTIFICATION_SERVICE_API, {
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       query: { token },
       reconnection: true,
       reconnectionAttempts: 5,

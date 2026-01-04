@@ -56,10 +56,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     // Initialize socket connection
     const establishSocketConnection = async () => {
         const newSocket = io(NOTIFICATION_SERVICE_API, {
-            transports: ["websocket"],
+            transports: ["websocket", "polling"],
             query: {
                 token: localStorage.getItem("ct_token"),
             },
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
         });
 
         setSocket(newSocket);

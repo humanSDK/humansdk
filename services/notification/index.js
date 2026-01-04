@@ -20,8 +20,17 @@ mongoose.connect(process.env.MONGO_URI)
 
 const io = new Server(PORT, {
     cors: {
-        origin: ['http://localhost:3000', 'https://app.rougeone.dev'],
+        origin: [
+            'http://localhost:3000',
+            'https://app.rougeone.dev',
+            'http://app.rougeone.dev',
+            'https://notification.rougeone.dev',
+            'http://notification.rougeone.dev'
+        ],
+        credentials: true,
+        methods: ['GET', 'POST'],
     },
+    allowEIO3: true,
 });
 
 // Use middleware for authentication

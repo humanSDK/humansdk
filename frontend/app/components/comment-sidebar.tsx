@@ -402,7 +402,7 @@ export function CommentSidebar({ isOpen, onClose, taskId, taskName }: CommentSid
       }
 
       const newSocket = io(NOTIFICATION_SERVICE_API, {
-        transports: ["websocket"],
+        transports: ["websocket", "polling"],
         query: { token },
         reconnection: true,
         reconnectionAttempts: 5,
